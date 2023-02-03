@@ -1,7 +1,6 @@
-import { api } from "@/services/api"
+import useSession, { AuthContext } from "@/contexts/AuthContext"
 import { Container, FormLabel, Input, Button, Text, Heading } from "@chakra-ui/react"
-import Router from "next/router"
-import { FormEvent, useState } from "react"
+import { FormEvent, useContext, useState } from "react"
 
 type Props = {}
 
@@ -19,6 +18,8 @@ function Login({}: Props) {
   const [globalError, setGlobalError] = useState<string | undefined>(undefined)
   const [isSending, setIsSending] = useState(false)
 
+  const { signIn } = useSession()
+
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault()
     setIsSending(true)
@@ -27,6 +28,16 @@ function Login({}: Props) {
     const name = eventTarget.name.value
     const password = eventTarget.password.value
     
+    const { message, status_code } = await signIn({name, password})
+
+    if (status_code >= 400 && status_code < 500) {
+      setGlobalError(message)
+      setIsSending(false)
+      return
+    }
+    
+    setIsSending(false)
+    return
   }
   
   return (

@@ -1,8 +1,11 @@
-import { MyError } from '@/errors'
+import useSession from '@/contexts/AuthContext'
+import { GetServerSideProps } from 'next'
 import Head from 'next/head'
-
+import { parseCookies } from "nookies" 
 
 export default function Home() {
+
+  const { user } = useSession()
 
   return (
     <>
@@ -13,8 +16,27 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <h1>hello world!</h1>
+        <h1>Hello, {user?.name}</h1>
       </main>
     </>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+
+  const { "session-token": token} = parseCookies(ctx)
+
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false
+      }
+    }
+  }
+
+  return {
+    props: {},
+    
+  }
 }
