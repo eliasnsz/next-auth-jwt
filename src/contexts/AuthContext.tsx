@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { setCookie, parseCookies } from "nookies"
-import { WithId } from "mongodb"
+import { setCookie, parseCookies, destroyCookie } from "nookies"
 import { IUser } from "@/types"
 import jwt from "jsonwebtoken"
 import { api } from "@/services/api"
 import Router from "next/router"
+import { log } from "console"
 
 interface SignInData {
   name: string,
@@ -31,6 +31,8 @@ interface Response {
 
 export const AuthContext = createContext({} as ContextType)
 
+const jwtt = "69124c57-5bd3-400f-a1bf-4ac5cdd00c57"
+
 export const AuthProvider = ({ children }: any) => {
   
   const [user, setUser] = useState<IUser | undefined>(undefined)  
@@ -41,10 +43,17 @@ export const AuthProvider = ({ children }: any) => {
       const { 'session-token': token } = parseCookies()
 
       if(token) {
-        const decodedToken = jwt.decode(token)
-        const response = await api.get(`/users/${decodedToken}`)
-        const session = response.data 
-        setUser(session)
+        try {
+          const decodedToken = jwt.verify(token, jwtt)
+          const response = await api.get(`/users/${decodedToken}`)
+          const session = response.data 
+          setUser(session)
+
+        } catch (err: any) {
+          destroyCookie(undefined, "session-token")
+          Router.push("/login")
+        }
+        
       }
     }
     revalidateUser()

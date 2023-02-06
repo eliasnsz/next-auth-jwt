@@ -1,9 +1,16 @@
 import useSession from '@/contexts/AuthContext'
-import { GetServerSideProps } from 'next'
+import { api } from '@/services/api'
+import { IUser } from '@/types'
+import axios from 'axios'
+import { GetServerSideProps, GetStaticProps } from 'next'
 import Head from 'next/head'
 import { parseCookies } from "nookies" 
 
-export default function Home() {
+interface Props {
+  posts: any[]
+}
+
+export default function Home({ posts }: Props) {
 
   const { user } = useSession()
 
@@ -17,26 +24,24 @@ export default function Home() {
       </Head>
       <main>
         <h1>Hello, {user?.name}</h1>
+        {
+          posts.map((post, index) =>{
+            return <p key={index}>{post.title}</p>
+          })
+        }
       </main>
     </>
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getStaticProps: GetStaticProps = async () => {
+  const response = await axios.get("https://tabnews.com.br/api/v1/contents")
+  const posts = response.data
 
-  const { "session-token": token} = parseCookies(ctx)
-
-  if (!token) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false
-      }
-    }
-  }
-
+  
   return {
-    props: {},
-    
+    props: {
+      posts
+    },
   }
 }

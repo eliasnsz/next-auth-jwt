@@ -11,6 +11,8 @@ interface SignInData {
   password: string
 }
 
+const jwtSecret = process.env.JWT_SECRET as string
+
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (req.method === "GET") {
@@ -57,7 +59,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       })
     }
 
-    const token = jwt.sign(userFinded._id.toString() , "secretkey", { algorithm: "HS256" })
+    const token = jwt.sign(userFinded._id.toString() , jwtSecret, { algorithm: "HS256" })
 
     return res.status(200).json({ token, user: userFinded})
   }
